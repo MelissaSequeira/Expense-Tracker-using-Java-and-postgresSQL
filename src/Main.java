@@ -7,7 +7,12 @@ public class Main {
     public static void main(String args[]) throws IOException {
         Scanner sc=new Scanner(System.in);
         ExpenseManager e=new ExpenseManager();
-
+        Connection conn=DatabaseConnection.getConnection();
+        if(conn!=null){
+            System.out.println("connection established!!");
+        }else {
+            System.out.println("connection failed");
+        }
         while(true){
 
             System.out.println("\n========== Expense Tracker ==========");
@@ -100,12 +105,7 @@ public class Main {
                 case 14:
                     System.out.print("Enter User ID: ");
                     int userId = sc.nextInt();
-
-                    User user = e.findUserById(userId);
-
-                    if(user == null){
-                        System.out.println("User not found!");
-                    }
+                    e.findUserById(userId);
                     break;
 
                 case 0:

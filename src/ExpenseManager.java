@@ -1,3 +1,6 @@
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.time.*;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -15,24 +18,68 @@ public class ExpenseManager {
     public void addUser(){
         System.out.println("User Name: ");
         String uName= sc.next();
-        User u= new User(uName);
-        users.add(u);
-        System.out.println("user added!!");
+//        User u= new User(uName);
+//        users.add(u);
+//        System.out.println("user added!!");
+        String sql="INSERT INTO users(user_name) VALUES (?)";
+        try (Connection con = DatabaseConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, uName);
+
+            int rows = ps.executeUpdate();
+
+            if(rows > 0){
+                System.out.println("User Added Successfully!");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     public void showUser(){
-        for(User us:users){
-            us.show();
-            System.out.println("============================");
+//        for(User us:users){
+//            us.show();
+//            System.out.println("============================");
+//        }
+        String sql="SELECT * FROM users";
+        try(Connection con = DatabaseConnection.getConnection();
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery()){
+
+            while(rs.next()){
+
+                System.out.println("User ID : " + rs.getInt("user_id"));
+                System.out.println("User Name : " + rs.getString("user_name"));
+                System.out.println("------------------------");
+            }
+
+        }catch(Exception e){
+            e.printStackTrace();
         }
     }
     public User findUserById(int userId){
 
-        for(User user : users){
-            if(user.getuId() == userId){
-                System.out.println("user there!!");
-                user.show();
-                return user;
+        String sql="SELECT * FROM users WHERE user_id=?";
+        try(Connection con= DatabaseConnection.getConnection();
+        PreparedStatement ps=con.prepareStatement(sql)
+        ){
+            ps.setInt(1,userId);
+            ResultSet rs = ps.executeQuery();
+
+            if(rs.next()){
+
+                System.out.println("User ID: " + rs.getInt("user_id"));
+                System.out.println("User Name: " + rs.getString("user_name"));
+
+                return new User(
+                        rs.getInt("user_id"),
+                        rs.getString("user_name")
+                );
             }
+
+        }catch(Exception e){
+            e.printStackTrace();
         }
 
         return null;
@@ -56,33 +103,66 @@ public class ExpenseManager {
 
         System.out.print("Enter Source: ");
         String source = sc.nextLine();
+        String sql="INSERT INTO income(user_id,amount,inc_source,income_date,income_time) VALUES(?,?,?,?,?)";
+        try(Connection con=DatabaseConnection.getConnection();
+        PreparedStatement ps=con.prepareStatement(sql)
+        ){
+            ps.setInt(1,userId);
+            ps.setDouble(2,amount);
+            ps.setString(3, source);
+            ps.setDate(4, java.sql.Date.valueOf(LocalDate.now()));
+            ps.setTime(5, java.sql.Time.valueOf(LocalTime.now()));
 
-        Income income = new Income(
-                userId,
-                amount,
-                source,
-                LocalDate.now(),
-                LocalTime.now()
-        );
+            int rows = ps.executeUpdate();
 
-        incomes.add(income);
+            if(rows > 0){
+                System.out.println("Income Added Successfully!");
+            }
 
-        System.out.println("Income Added Successfully!");
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+//        Income income = new Income(
+//                userId,
+//                amount,
+//                source,
+//                LocalDate.now(),
+//                LocalTime.now()
+//        );
+//
+//        incomes.add(income);
+
     }
 
     public void viewIncome(){
+//
+//        if(incomes.isEmpty()){
+//            System.out.println("No income found!");
+//            return;
+//        }
+//
+//        for(Income income : incomes){
+//            income.show();
+//            System.out.println("----------------");
+//        }
+        String sql="SELECT * FROM income";
+        try(Connection con= DatabaseConnection.getConnection();
+        PreparedStatement ps=con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery()
+        ){while(rs.next()){
+            System.out.println("Income id: "+rs.getInt("income_id"));
+            System.out.println("User id: "+rs.getInt("user_id"));
+            System.out.println("Amount: "+rs.getDouble("amount"));
+            System.out.println("Income source: "+rs.getString("inc_source"));
+            System.out.println("Income date: "+rs.getDate("income_date"));
+            System.out.println("Income time: "+rs.getTime("income_time"));
 
-        if(incomes.isEmpty()){
-            System.out.println("No income found!");
-            return;
         }
-
-        for(Income income : incomes){
-            income.show();
-            System.out.println("----------------");
+        }catch(Exception e){
+            e.printStackTrace();
         }
     }
-
     public void addExpense(){
 
         System.out.print("Enter User ID: ");
@@ -97,7 +177,6 @@ public class ExpenseManager {
 
         System.out.print("Enter Amount: ");
         double amount = sc.nextDouble();
-
         sc.nextLine();
 
         System.out.print("Enter Category: ");
@@ -106,29 +185,51 @@ public class ExpenseManager {
         System.out.print("Enter Description: ");
         String description = sc.nextLine();
 
-        Expense expense = new Expense(
-                userId,
-                amount,
-                category,
-                description,
-                LocalDate.now(),
-                LocalTime.now()
-        );
+        String sql = "INSERT INTO expense(user_id, amount_spent, category, description, income_date, income_time) VALUES(?,?,?,?,?,?)";
 
-        expenses.add(expense);
+        try(Connection con = DatabaseConnection.getConnection();
+            PreparedStatement ps = con.prepareStatement(sql)){
 
-        System.out.println("Expense Added Successfully!");
+            ps.setInt(1, userId);
+            ps.setDouble(2, amount);
+            ps.setString(3, category);
+            ps.setString(4, description);
+            ps.setDate(5, java.sql.Date.valueOf(LocalDate.now()));
+            ps.setTime(6, java.sql.Time.valueOf(LocalTime.now()));
+
+            int rows = ps.executeUpdate();
+
+            if(rows > 0){
+                System.out.println("Expense Added Successfully!");
+            }
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
     public void viewExpenses(){
 
-        if(expenses.isEmpty()){
-            System.out.println("No expenses found!");
-            return;
-        }
+        String sql = "SELECT * FROM expense";
 
-        for(Expense expense : expenses){
-            expense.show();
-            System.out.println("----------------");
+        try(Connection con = DatabaseConnection.getConnection();
+            PreparedStatement ps = con.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+        ){
+
+            while(rs.next()){
+
+                System.out.println("Expense ID : " + rs.getInt("expense_id"));
+                System.out.println("User ID    : " + rs.getInt("user_id"));
+                System.out.println("Amount     : " + rs.getDouble("spent_amt"));
+                System.out.println("Category   : " + rs.getString("category"));
+                System.out.println("Description: " + rs.getString("description"));
+                System.out.println("Date       : " + rs.getDate("expense_date"));
+                System.out.println("Time       : " + rs.getTime("expense_time"));
+                System.out.println("---------------------------");
+            }
+
+        }catch(Exception e){
+            e.printStackTrace();
         }
     }
     public void calSavings(int userId){

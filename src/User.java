@@ -3,9 +3,8 @@ public class User {
     private int uId;
     private String uName;
 //    private String password;
-private static int nextId = 1;
-    public User(String uName) {
-        this.uId = nextId++;
+    public User(int uId,String uName) {
+        this.uId = uId;
         this.uName = uName;
     }
 
