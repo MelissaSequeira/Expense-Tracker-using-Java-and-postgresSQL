@@ -1,4 +1,5 @@
 import java.sql.Connection;
+import java.sql.DataTruncation;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.*;
@@ -220,11 +221,11 @@ public class ExpenseManager {
 
                 System.out.println("Expense ID : " + rs.getInt("expense_id"));
                 System.out.println("User ID    : " + rs.getInt("user_id"));
-                System.out.println("Amount     : " + rs.getDouble("spent_amt"));
+                System.out.println("Amount     : " + rs.getDouble("amount_spent"));
                 System.out.println("Category   : " + rs.getString("category"));
                 System.out.println("Description: " + rs.getString("description"));
-                System.out.println("Date       : " + rs.getDate("expense_date"));
-                System.out.println("Time       : " + rs.getTime("expense_time"));
+                System.out.println("Date       : " + rs.getDate("income_date"));
+                System.out.println("Time       : " + rs.getTime("income_time"));
                 System.out.println("---------------------------");
             }
 
@@ -233,63 +234,97 @@ public class ExpenseManager {
         }
     }
     public void calSavings(int userId){
-        double totalIncome=0;
-        double totalExpense=0;
-        for(Income inc:incomes){
-            if(inc.getUserId()==userId){
-                totalIncome=totalIncome+inc.getAmount();
-            }
-        }
-        for(Expense exp:expenses){
-            if(exp.getUserId()==userId){
-                totalExpense=totalExpense+exp.getSpentAmt();
-            }
-        }
-        double savings = totalIncome - totalExpense;
 
-        System.out.println("\n------ Savings Report ------");
-        System.out.println("User ID      : " + userId);
-        System.out.println("Total Income : ₹" + totalIncome);
-        System.out.println("Total Expense: ₹" + totalExpense);
-        System.out.println("Savings      : ₹" + savings);
+        double totalIncome = 0;
+        double totalExpense = 0;
+
+        String incomeSql = "SELECT COALESCE(SUM(amount), 0) AS total_income FROM income WHERE user_id = ?";
+        String expenseSql = "SELECT COALESCE(SUM(amount_spent), 0) AS total_expense FROM expense WHERE user_id = ?";
+
+        try(Connection con = DatabaseConnection.getConnection()){
+
+            // Total Income
+            try(PreparedStatement ps = con.prepareStatement(incomeSql)){
+                ps.setInt(1, userId);
+
+                ResultSet rs = ps.executeQuery();
+
+                if(rs.next()){
+                    totalIncome = rs.getDouble("total_income");
+                }
+            }
+
+            // Total Expense
+            try(PreparedStatement ps = con.prepareStatement(expenseSql)){
+                ps.setInt(1, userId);
+
+                ResultSet rs = ps.executeQuery();
+
+                if(rs.next()){
+                    totalExpense = rs.getDouble("total_expense");
+                }
+            }
+
+            double savings = totalIncome - totalExpense;
+
+            System.out.println("\n------ Savings Report ------");
+            System.out.println("User ID      : " + userId);
+            System.out.println("Total Income : ₹" + totalIncome);
+            System.out.println("Total Expense: ₹" + totalExpense);
+            System.out.println("Savings      : ₹" + savings);
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
     public void delUser(int uid){
-        boolean found=false;
-        for(User u:users){
-            if(u.getuId()==uid){
-                users.remove(u);
-                System.out.println("User deleted!!");
-                found=true;
+
+        String sql="DELETE FROM users WHERE user_id=?";
+            try(Connection con = DatabaseConnection.getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)){
+
+                ps.setInt(1, uid);
+
+                int rows = ps.executeUpdate();
+
+                if(rows > 0){
+                    System.out.println("User deleted successfully!");
+                }else{
+                    System.out.println("User not found!");
+                }
+
+            }catch(Exception e){
+                e.printStackTrace();
             }
-        }
-        if(!found){
-            System.out.println("user not found!!");
-        }
     }
     public void delIncome(int uid){
-        boolean found=false;
-        for(Income inc:incomes){
-            if(inc.getIncomeId()==uid){
-                users.remove(inc);
-                System.out.println("Income deleted!!");
-                found=true;
+        String sql="DELETE FROM income WHERE user_id=?";
+        try(Connection con= DatabaseConnection.getConnection();
+        PreparedStatement ps=con.prepareStatement(sql)){
+            ps.setInt(1,uid);
+            int rows=ps.executeUpdate();
+            if(rows > 0){
+                System.out.println("Income deleted successfully!");
+            }else{
+                System.out.println("Income not found!");
             }
-        }
-        if(!found){
-            System.out.println("User income not found!!");
+        }catch(Exception e){
+            e.printStackTrace();
         }
     }
     public void delExpense(int uid){
-        boolean found=false;
-        for(Expense exp:expenses){
-            if(exp.getExpenseId()==uid){
-                users.remove(exp);
-                System.out.println("User Expense deleted!!");
-                found=true;
+        String sql="DELETE FROM expense WHERE user_id=?";
+        try(Connection con= DatabaseConnection.getConnection();
+            PreparedStatement ps=con.prepareStatement(sql)){
+            ps.setInt(1,uid);
+            int rows=ps.executeUpdate();
+            if(rows > 0){
+                System.out.println("Expense deleted successfully!");
+            }else{
+                System.out.println("Expense not found!");
             }
-        }
-        if(!found){
-            System.out.println("user expense not found!!");
+        }catch(Exception e){
+            e.printStackTrace();
         }
     }
     public void calculateTodaySavings(int userId){
@@ -335,57 +370,92 @@ public class ExpenseManager {
     }
 
     public void updExpense(int uid){
-        for (Expense expense : expenses) {
-
-            if (expense.getExpenseId() == uid) {
-
+//        for (Expense expense : expenses) {
+//
+//            if (expense.getExpenseId() == uid) {
+//
                 System.out.print("Enter New Amount: ");
                 double amount = sc.nextDouble();
                 sc.nextLine();
-
+//
                 System.out.print("Enter New Category: ");
                 String category = sc.nextLine();
 
                 System.out.print("Enter New Description: ");
                 String description = sc.nextLine();
 
-                expense.setSpentAmt(amount);
-                expense.setCategory(category);
-                expense.setDescription(description);
+//                expense.setSpentAmt(amount);
+//                expense.setCategory(category);
+//                expense.setDescription(description);
+//
+//                System.out.println("Expense Updated Successfully!");
+//                return;
+//            }
+//        }
+//
+//        System.out.println("Expense not found!");
 
+        String sql="UPDATE expense SET amount_spent=?,category=?, description=? WHERE user_id=?";
+        try(Connection con=DatabaseConnection.getConnection();
+        PreparedStatement ps=con.prepareStatement(sql)){
+            ps.setDouble(1,amount);
+            ps.setString(2,category);
+            ps.setString(3,description);
+            ps.setInt(4,uid);
+            int rows = ps.executeUpdate();
+
+            if(rows > 0){
                 System.out.println("Expense Updated Successfully!");
-                return;
+            }else{
+                System.out.println("Expense ID not found!");
             }
+        }catch (Exception e){
+           e.printStackTrace();
         }
-
-        System.out.println("Expense not found!");
     }
 
     public void updateIncome() {
 
-        System.out.print("Enter Income ID: ");
-        int incomeId = sc.nextInt();
+        System.out.print("Enter user ID: ");
+        int userid = sc.nextInt();
         sc.nextLine();
-
-        for (Income income : incomes) {
-
-            if (income.getIncomeId() == incomeId) {
-
+//
+//        for (Income income : incomes) {
+//
+//            if (income.getIncomeId() == incomeId) {
+//
                 System.out.print("Enter New Amount: ");
                 double amount = sc.nextDouble();
                 sc.nextLine();
-
+//
                 System.out.print("Enter New Source: ");
                 String source = sc.nextLine();
 
-                income.setAmount(amount);
-                income.setSource(source);
+//                income.setAmount(amount);
+//                income.setSource(source);
+//
+//                System.out.println("Income Updated Successfully!");
+//                return;
+//            }
+//        }
+//
+//        System.out.println("Income not found!");
 
+        String sql="UPDATE income SET amount=?,inc_source=? WHERE user_id=?";
+        try(Connection con=DatabaseConnection.getConnection();
+            PreparedStatement ps=con.prepareStatement(sql)){
+            ps.setDouble(1,amount);
+            ps.setString(2,source);
+            ps.setInt(3,userid);
+            int rows = ps.executeUpdate();
+
+            if(rows > 0){
                 System.out.println("Income Updated Successfully!");
-                return;
+            }else{
+                System.out.println("Income ID not found!");
             }
+        }catch (Exception e){
+            e.printStackTrace();
         }
-
-        System.out.println("Income not found!");
     }
 }
