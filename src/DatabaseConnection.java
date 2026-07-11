@@ -1,18 +1,35 @@
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.Properties;
+import java.io.FileInputStream;
 
 public class DatabaseConnection {
-    private static final String URL="jdbc:postgresql://localhost:5432/expense";
-    private static final String USER="postgres";
-    private static final String PASSWORD="postgres123";
 
-    public static Connection getConnection(){
-        try{
-            return DriverManager.getConnection(URL,USER,PASSWORD);
-        }catch(Exception e){
+    private static Connection connection;
+
+    public static Connection getConnection() {
+
+        try {
+
+            if (connection == null || connection.isClosed()) {
+
+                Properties properties = new Properties();
+
+                FileInputStream fis = new FileInputStream("db.properties");
+
+                properties.load(fis);
+
+                String url = properties.getProperty("db.url");
+                String username = properties.getProperty("db.username");
+                String password = properties.getProperty("db.password");
+
+                connection = DriverManager.getConnection(url, username, password);
+            }
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
-    }
 
+        return connection;
+    }
 }
