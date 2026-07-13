@@ -1,3 +1,5 @@
+package model;
+
 import java.time.*;
 
 public class Expense {
@@ -30,8 +32,8 @@ public class Expense {
 
 
     public void show(){
-        System.out.println("Expense id: "+getExpenseId());
-        System.out.println("User id: "+getUserId());
+        System.out.println("model.Expense id: "+getExpenseId());
+        System.out.println("model.User id: "+getUserId());
         System.out.println("Spent: "+getSpentAmt());
         System.out.println("Category: "+getCategory());
         System.out.println("Description: "+getDescription());

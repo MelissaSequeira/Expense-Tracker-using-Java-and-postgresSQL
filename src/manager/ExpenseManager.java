@@ -1,5 +1,8 @@
+package manager;
+import model.*;
+import database.DatabaseConnection;
+
 import java.sql.Connection;
-import java.sql.DataTruncation;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.*;
@@ -7,21 +10,16 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ExpenseManager {
-    private ArrayList<User> users;
-    private ArrayList<Expense> expenses;
-    private ArrayList<Income> incomes;
+    ArrayList<User> users =new ArrayList<>();
+    ArrayList<Income> income =new ArrayList<>();
+    ArrayList<Expense> expense=new ArrayList<>();
     public ExpenseManager() {
-        users = new ArrayList<>();
-        expenses = new ArrayList<>();
-        incomes = new ArrayList<>();
+        this.users=users;
+        this.income=income;
+        this.expense=expense;
     }
-    Scanner sc=new Scanner(System.in);
-    public void addUser(){
-        System.out.println("User Name: ");
-        String uName= sc.next();
-//        User u= new User(uName);
-//        users.add(u);
-//        System.out.println("user added!!");
+    public void addUser(String uName){
+
         String sql="INSERT INTO users(user_name) VALUES (?)";
         try (Connection con = DatabaseConnection.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -31,47 +29,46 @@ public class ExpenseManager {
             int rows = ps.executeUpdate();
 
             if(rows > 0){
-                System.out.println("User Added Successfully!");
+                System.out.println("model.User Added Successfully!");
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    public void showUser(){
-//        for(User us:users){
-//            us.show();
-//            System.out.println("============================");
-//        }
+    public ArrayList<User> getAllUser(){
         String sql="SELECT * FROM users";
         try(Connection con = DatabaseConnection.getConnection();
             PreparedStatement ps = con.prepareStatement(sql);
             ResultSet rs = ps.executeQuery()){
 
             while(rs.next()){
-
-                System.out.println("User ID : " + rs.getInt("user_id"));
-                System.out.println("User Name : " + rs.getString("user_name"));
-                System.out.println("------------------------");
+                User user=new User(
+                        rs.getInt("user_id"),
+                        rs.getString("user_name")
+                );
+                users.add(user);
             }
+
 
         }catch(Exception e){
             e.printStackTrace();
         }
+        return users;
     }
     public User findUserById(int userId){
 
         String sql="SELECT * FROM users WHERE user_id=?";
         try(Connection con= DatabaseConnection.getConnection();
-        PreparedStatement ps=con.prepareStatement(sql)
+            PreparedStatement ps=con.prepareStatement(sql)
         ){
             ps.setInt(1,userId);
             ResultSet rs = ps.executeQuery();
 
             if(rs.next()){
 
-                System.out.println("User ID: " + rs.getInt("user_id"));
-                System.out.println("User Name: " + rs.getString("user_name"));
+                System.out.println("model.User ID: " + rs.getInt("user_id"));
+                System.out.println("model.User Name: " + rs.getString("user_name"));
 
                 return new User(
                         rs.getInt("user_id"),
@@ -85,28 +82,18 @@ public class ExpenseManager {
 
         return null;
     }
-    public void addIncome(){
-
-        System.out.print("Enter User ID: ");
-        int userId = sc.nextInt();
+    public void addIncome(int userId,double amount, String source){
 
         User user = findUserById(userId);
 
         if(user == null){
-            System.out.println("User not found!");
+            System.out.println("model.User not found!");
             return;
         }
 
-        System.out.print("Enter Amount: ");
-        double amount = sc.nextDouble();
-
-        sc.nextLine();
-
-        System.out.print("Enter Source: ");
-        String source = sc.nextLine();
         String sql="INSERT INTO income(user_id,amount,inc_source,income_date,income_time) VALUES(?,?,?,?,?)";
-        try(Connection con=DatabaseConnection.getConnection();
-        PreparedStatement ps=con.prepareStatement(sql)
+        try(Connection con= DatabaseConnection.getConnection();
+            PreparedStatement ps=con.prepareStatement(sql)
         ){
             ps.setInt(1,userId);
             ps.setDouble(2,amount);
@@ -117,74 +104,41 @@ public class ExpenseManager {
             int rows = ps.executeUpdate();
 
             if(rows > 0){
-                System.out.println("Income Added Successfully!");
+                System.out.println("model.Income Added Successfully!");
             }
 
         }catch(Exception e){
             e.printStackTrace();
         }
 
-//        Income income = new Income(
-//                userId,
-//                amount,
-//                source,
-//                LocalDate.now(),
-//                LocalTime.now()
-//        );
-//
-//        incomes.add(income);
-
     }
 
     public void viewIncome(){
-//
-//        if(incomes.isEmpty()){
-//            System.out.println("No income found!");
-//            return;
-//        }
-//
-//        for(Income income : incomes){
-//            income.show();
-//            System.out.println("----------------");
-//        }
         String sql="SELECT * FROM income";
         try(Connection con= DatabaseConnection.getConnection();
-        PreparedStatement ps=con.prepareStatement(sql);
+            PreparedStatement ps=con.prepareStatement(sql);
             ResultSet rs = ps.executeQuery()
         ){while(rs.next()){
-            System.out.println("Income id: "+rs.getInt("income_id"));
-            System.out.println("User id: "+rs.getInt("user_id"));
+            System.out.println("model.Income id: "+rs.getInt("income_id"));
+            System.out.println("model.User id: "+rs.getInt("user_id"));
             System.out.println("Amount: "+rs.getDouble("amount"));
-            System.out.println("Income source: "+rs.getString("inc_source"));
-            System.out.println("Income date: "+rs.getDate("income_date"));
-            System.out.println("Income time: "+rs.getTime("income_time"));
+            System.out.println("model.Income source: "+rs.getString("inc_source"));
+            System.out.println("model.Income date: "+rs.getDate("income_date"));
+            System.out.println("model.Income time: "+rs.getTime("income_time"));
 
         }
         }catch(Exception e){
             e.printStackTrace();
         }
     }
-    public void addExpense(){
-
-        System.out.print("Enter User ID: ");
-        int userId = sc.nextInt();
+    public void addExpense(int userId, double amount, String category, String description){
 
         User user = findUserById(userId);
 
         if(user == null){
-            System.out.println("User not found!");
+            System.out.println("model.User not found!");
             return;
         }
-
-        System.out.print("Enter Amount: ");
-        double amount = sc.nextDouble();
-        sc.nextLine();
-
-        System.out.print("Enter Category: ");
-        String category = sc.nextLine();
-
-        System.out.print("Enter Description: ");
-        String description = sc.nextLine();
 
         String sql = "INSERT INTO expense(user_id, amount_spent, category, description, income_date, income_time) VALUES(?,?,?,?,?,?)";
 
@@ -201,7 +155,7 @@ public class ExpenseManager {
             int rows = ps.executeUpdate();
 
             if(rows > 0){
-                System.out.println("Expense Added Successfully!");
+                System.out.println("model.Expense Added Successfully!");
             }
 
         }catch(Exception e){
@@ -219,8 +173,8 @@ public class ExpenseManager {
 
             while(rs.next()){
 
-                System.out.println("Expense ID : " + rs.getInt("expense_id"));
-                System.out.println("User ID    : " + rs.getInt("user_id"));
+                System.out.println("model.Expense ID : " + rs.getInt("expense_id"));
+                System.out.println("model.User ID    : " + rs.getInt("user_id"));
                 System.out.println("Amount     : " + rs.getDouble("amount_spent"));
                 System.out.println("Category   : " + rs.getString("category"));
                 System.out.println("Description: " + rs.getString("description"));
@@ -243,7 +197,6 @@ public class ExpenseManager {
 
         try(Connection con = DatabaseConnection.getConnection()){
 
-            // Total Income
             try(PreparedStatement ps = con.prepareStatement(incomeSql)){
                 ps.setInt(1, userId);
 
@@ -254,7 +207,7 @@ public class ExpenseManager {
                 }
             }
 
-            // Total Expense
+            // Total model.Expense
             try(PreparedStatement ps = con.prepareStatement(expenseSql)){
                 ps.setInt(1, userId);
 
@@ -268,9 +221,9 @@ public class ExpenseManager {
             double savings = totalIncome - totalExpense;
 
             System.out.println("\n------ Savings Report ------");
-            System.out.println("User ID      : " + userId);
-            System.out.println("Total Income : ₹" + totalIncome);
-            System.out.println("Total Expense: ₹" + totalExpense);
+            System.out.println("model.User ID      : " + userId);
+            System.out.println("Total model.Income : ₹" + totalIncome);
+            System.out.println("Total model.Expense: ₹" + totalExpense);
             System.out.println("Savings      : ₹" + savings);
 
         }catch(Exception e){
@@ -288,9 +241,9 @@ public class ExpenseManager {
                 int rows = ps.executeUpdate();
 
                 if(rows > 0){
-                    System.out.println("User deleted successfully!");
+                    System.out.println("model.User deleted successfully!");
                 }else{
-                    System.out.println("User not found!");
+                    System.out.println("model.User not found!");
                 }
 
             }catch(Exception e){
@@ -300,13 +253,13 @@ public class ExpenseManager {
     public void delIncome(int uid){
         String sql="DELETE FROM income WHERE user_id=?";
         try(Connection con= DatabaseConnection.getConnection();
-        PreparedStatement ps=con.prepareStatement(sql)){
+            PreparedStatement ps=con.prepareStatement(sql)){
             ps.setInt(1,uid);
             int rows=ps.executeUpdate();
             if(rows > 0){
-                System.out.println("Income deleted successfully!");
+                System.out.println("model.Income deleted successfully!");
             }else{
-                System.out.println("Income not found!");
+                System.out.println("model.Income not found!");
             }
         }catch(Exception e){
             e.printStackTrace();
@@ -319,85 +272,61 @@ public class ExpenseManager {
             ps.setInt(1,uid);
             int rows=ps.executeUpdate();
             if(rows > 0){
-                System.out.println("Expense deleted successfully!");
+                System.out.println("model.Expense deleted successfully!");
             }else{
-                System.out.println("Expense not found!");
+                System.out.println("model.Expense not found!");
             }
         }catch(Exception e){
             e.printStackTrace();
         }
     }
-    public void calculateTodaySavings(int userId){
-
-        User user = findUserById(userId);
-
-        if(user == null){
-            System.out.println("User not found!");
-            return;
-        }
-
-        double totalIncome = 0;
-        double totalExpense = 0;
-
-        LocalDate today = LocalDate.now();
-
-        // Today's income
-        for(Income income : incomes){
-            if(income.getUserId() == userId &&
-                    income.getDate().equals(today)){
-
-                totalIncome += income.getAmount();
-            }
-        }
-
-        // Today's expense
-        for(Expense expense : expenses){
-            if(expense.getUserId() == userId &&
-                    expense.getDate().equals(today)){
-
-                totalExpense += expense.getSpentAmt();
-            }
-        }
-
-        double savings = totalIncome - totalExpense;
-
-        System.out.println("\n------ Today's Savings ------");
-        System.out.println("Date          : " + today);
-        System.out.println("User          : " + user.getuName());
-        System.out.println("Today's Income: ₹" + totalIncome);
-        System.out.println("Today's Expense: ₹" + totalExpense);
-        System.out.println("Today's Savings: ₹" + savings);
-    }
-
-    public void updExpense(int uid){
-//        for (Expense expense : expenses) {
+//    public void calculateTodaySavings(int userId){
 //
-//            if (expense.getExpenseId() == uid) {
+//        model.User user = findUserById(userId);
 //
-                System.out.print("Enter New Amount: ");
-                double amount = sc.nextDouble();
-                sc.nextLine();
+//        if(user == null){
+//            System.out.println("model.User not found!");
+//            return;
+//        }
 //
-                System.out.print("Enter New Category: ");
-                String category = sc.nextLine();
-
-                System.out.print("Enter New Description: ");
-                String description = sc.nextLine();
-
-//                expense.setSpentAmt(amount);
-//                expense.setCategory(category);
-//                expense.setDescription(description);
+//        double totalIncome = 0;
+//        double totalExpense = 0;
 //
-//                System.out.println("Expense Updated Successfully!");
-//                return;
+//        LocalDate today = LocalDate.now();
+//
+//        // Today's income
+//        for(model.Income income : incomes){
+//            if(income.getUserId() == userId &&
+//                    income.getDate().equals(today)){
+//
+//                totalIncome += income.getAmount();
 //            }
 //        }
 //
-//        System.out.println("Expense not found!");
+//        // Today's expense
+//        for(model.Expense expense : expenses){
+//            if(expense.getUserId() == userId &&
+//                    expense.getDate().equals(today)){
+//
+//                totalExpense += expense.getSpentAmt();
+//            }
+//        }
+//
+//        double savings = totalIncome - totalExpense;
+//
+//        System.out.println("\n------ Today's Savings ------");
+//        System.out.println("Date          : " + today);
+//        System.out.println("model.User          : " + user.getuName());
+//        System.out.println("Today's model.Income: ₹" + totalIncome);
+//        System.out.println("Today's model.Expense: ₹" + totalExpense);
+//        System.out.println("Today's Savings: ₹" + savings);
+//    }
+
+    public void updExpense(int uid, double amount,String category,String description){
 
         String sql="UPDATE expense SET amount_spent=?,category=?, description=? WHERE user_id=?";
-        try(Connection con=DatabaseConnection.getConnection();
-        PreparedStatement ps=con.prepareStatement(sql)){
+        try(Connection con= DatabaseConnection.getConnection();
+            PreparedStatement ps=con.prepareStatement(sql)){
             ps.setDouble(1,amount);
             ps.setString(2,category);
             ps.setString(3,description);
@@ -405,44 +334,19 @@ public class ExpenseManager {
             int rows = ps.executeUpdate();
 
             if(rows > 0){
-                System.out.println("Expense Updated Successfully!");
+                System.out.println("model.Expense Updated Successfully!");
             }else{
-                System.out.println("Expense ID not found!");
+                System.out.println("model.Expense ID not found!");
             }
         }catch (Exception e){
            e.printStackTrace();
         }
     }
 
-    public void updateIncome() {
-
-        System.out.print("Enter user ID: ");
-        int userid = sc.nextInt();
-        sc.nextLine();
-//
-//        for (Income income : incomes) {
-//
-//            if (income.getIncomeId() == incomeId) {
-//
-                System.out.print("Enter New Amount: ");
-                double amount = sc.nextDouble();
-                sc.nextLine();
-//
-                System.out.print("Enter New Source: ");
-                String source = sc.nextLine();
-
-//                income.setAmount(amount);
-//                income.setSource(source);
-//
-//                System.out.println("Income Updated Successfully!");
-//                return;
-//            }
-//        }
-//
-//        System.out.println("Income not found!");
+    public void updateIncome(int userid, double amount, String source) {
 
         String sql="UPDATE income SET amount=?,inc_source=? WHERE user_id=?";
-        try(Connection con=DatabaseConnection.getConnection();
+        try(Connection con= DatabaseConnection.getConnection();
             PreparedStatement ps=con.prepareStatement(sql)){
             ps.setDouble(1,amount);
             ps.setString(2,source);
@@ -450,9 +354,9 @@ public class ExpenseManager {
             int rows = ps.executeUpdate();
 
             if(rows > 0){
-                System.out.println("Income Updated Successfully!");
+                System.out.println("model.Income Updated Successfully!");
             }else{
-                System.out.println("Income ID not found!");
+                System.out.println("model.Income ID not found!");
             }
         }catch (Exception e){
             e.printStackTrace();

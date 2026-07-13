@@ -1,3 +1,5 @@
+package model;
+
 public class User {
 
     private int uId;
@@ -16,7 +18,7 @@ public class User {
         return uId;
     }
     public void show(){
-        System.out.println("User id: "+getuId());
-        System.out.println("User name: "+getuName());
+        System.out.println("model.User id: "+getuId());
+        System.out.println("model.User name: "+getuName());
     }
 }

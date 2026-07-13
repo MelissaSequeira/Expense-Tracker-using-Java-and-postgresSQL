@@ -1,3 +1,5 @@
+package model;
+
 import java.time.*;
 
 public class Income {
@@ -57,8 +59,8 @@ public class Income {
     }
 
     public void show() {
-        System.out.println("Income ID: " + incomeId);
-        System.out.println("User ID: " + userId);
+        System.out.println("model.Income ID: " + incomeId);
+        System.out.println("model.User ID: " + userId);
         System.out.println("Amount: " + amount);
         System.out.println("Source: " + source);
         System.out.println("Date: " + date);
