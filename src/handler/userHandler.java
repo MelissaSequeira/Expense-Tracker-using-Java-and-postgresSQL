@@ -59,7 +59,39 @@ public class userHandler implements HttpHandler {
                     new InputStreamReader(exchange.getRequestBody())
             );
             String userName=br.readLine();
+            manager.addUser(userName);
 
+            String response = "User Added Successfully";
+
+            exchange.sendResponseHeaders(200,response.getBytes().length);
+            exchange.getResponseBody().write(response.getBytes());
+            exchange.getResponseBody().close();
+        }
+        else if(exchange.getRequestMethod().equalsIgnoreCase("DELETE")){
+            BufferedReader bf=new BufferedReader(new InputStreamReader(exchange.getRequestBody()) );
+            int user_id=Integer.parseInt(bf.readLine());
+            manager.delUser(user_id);
+            String response = "User deleted Successfully";
+
+            exchange.sendResponseHeaders(200,response.getBytes().length);
+            exchange.getResponseBody().write(response.getBytes());
+            exchange.getResponseBody().close();
+        }else if(exchange.getRequestMethod().equalsIgnoreCase("PUT")){
+            BufferedReader br = new BufferedReader(
+                    new InputStreamReader(exchange.getRequestBody())
+            );
+
+            int userId = Integer.parseInt(br.readLine());
+            String newName = br.readLine();
+
+            manager.updateUser(userId, newName);
+
+            String response = "User Updated Successfully";
+
+            exchange.sendResponseHeaders(200, response.getBytes().length);
+            exchange.getResponseBody().write(response.getBytes());
+            exchange.getResponseBody().close();
         }
     }
+
 }

@@ -361,5 +361,23 @@ public class ExpenseManager {
         }catch (Exception e){
             e.printStackTrace();
         }
+
+    }
+    public void updateUser(int userid, String uname){
+        String sql="UPDATE users SET user_name=? WHERE user_id=?";
+        try(Connection con=DatabaseConnection.getConnection();
+        PreparedStatement ps= con.prepareStatement(sql)){
+            ps.setInt(2,userid);
+            ps.setString(1,uname);
+            int rows=ps.executeUpdate();
+            if(rows > 0){
+                System.out.println("model.Income Updated Successfully!");
+            }else{
+                System.out.println("model.Income ID not found!");
+            }
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 }
