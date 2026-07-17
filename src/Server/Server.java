@@ -26,6 +26,7 @@ public class Server {
         ExpenseManager manager = new ExpenseManager();
 
         server.createContext("/users", new userHandler(manager));
+        server.createContext("/income",new incomeHandler(manager));
         server.setExecutor(null);
 
         server.start();

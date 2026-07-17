@@ -113,23 +113,27 @@ public class ExpenseManager {
 
     }
 
-    public void viewIncome(){
+    public ArrayList<Income> viewIncome(){
         String sql="SELECT * FROM income";
         try(Connection con= DatabaseConnection.getConnection();
             PreparedStatement ps=con.prepareStatement(sql);
             ResultSet rs = ps.executeQuery()
         ){while(rs.next()){
-            System.out.println("model.Income id: "+rs.getInt("income_id"));
-            System.out.println("model.User id: "+rs.getInt("user_id"));
-            System.out.println("Amount: "+rs.getDouble("amount"));
-            System.out.println("model.Income source: "+rs.getString("inc_source"));
-            System.out.println("model.Income date: "+rs.getDate("income_date"));
-            System.out.println("model.Income time: "+rs.getTime("income_time"));
+            Income inc=new Income(
+                    rs.getInt("income_id"),
+                    rs.getInt("user_id"),
+                    rs.getDouble("amount"),
+                    rs.getString("inc_source"),
+                    rs.getDate("income_date").toLocalDate(),
+                    rs.getTime("income_time").toLocalTime()
+            );
+            income.add(inc);
 
         }
         }catch(Exception e){
             e.printStackTrace();
         }
+        return income;
     }
     public void addExpense(int userId, double amount, String category, String description){
 
@@ -250,11 +254,11 @@ public class ExpenseManager {
                 e.printStackTrace();
             }
     }
-    public void delIncome(int uid){
-        String sql="DELETE FROM income WHERE user_id=?";
+    public void delIncome(int incid){
+        String sql="DELETE FROM income WHERE income_id=?";
         try(Connection con= DatabaseConnection.getConnection();
             PreparedStatement ps=con.prepareStatement(sql)){
-            ps.setInt(1,uid);
+            ps.setInt(1,incid);
             int rows=ps.executeUpdate();
             if(rows > 0){
                 System.out.println("model.Income deleted successfully!");
@@ -343,14 +347,14 @@ public class ExpenseManager {
         }
     }
 
-    public void updateIncome(int userid, double amount, String source) {
+    public void updateIncome(int incomeid, double amount, String source) {
 
-        String sql="UPDATE income SET amount=?,inc_source=? WHERE user_id=?";
+        String sql="UPDATE income SET amount=?,inc_source=? WHERE income_id=?";
         try(Connection con= DatabaseConnection.getConnection();
             PreparedStatement ps=con.prepareStatement(sql)){
             ps.setDouble(1,amount);
             ps.setString(2,source);
-            ps.setInt(3,userid);
+            ps.setInt(3,incomeid);
             int rows = ps.executeUpdate();
 
             if(rows > 0){

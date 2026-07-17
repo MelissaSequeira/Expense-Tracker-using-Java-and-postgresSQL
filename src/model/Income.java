@@ -9,9 +9,8 @@ public class Income {
     private String source;
     private LocalDate date;
     private LocalTime time;
-    private static int nextId = 1;
-    Income( int userId, double amount, String source, LocalDate date, LocalTime time){
-        this.incomeId=nextId++;
+    public Income(int incomeId, int userId, double amount, String source, LocalDate date, LocalTime time){
+        this.incomeId=incomeId;
         this.userId=userId;
         this.amount=amount;
         this.source=source;

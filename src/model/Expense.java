@@ -11,9 +11,8 @@ public class Expense {
     private String description;
     private LocalDate date;
     private LocalTime time;
-    private static int nextId = 1;
-    Expense(int userId, double spentAmt, String category,String description,LocalDate date, LocalTime time){
-        this.expenseId=nextId++;
+    Expense(int expenseId,int userId, double spentAmt, String category,String description,LocalDate date, LocalTime time){
+        this.expenseId=expenseId;
         this.userId=userId;
         this.spentAmt=spentAmt;
         this.category=category;
