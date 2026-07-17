@@ -194,7 +194,7 @@ public class ExpenseManager {
         }
         return expense;
     }
-    public void calSavings(int userId){
+    public Savings calSavings(int userId){
 
         double totalIncome = 0;
         double totalExpense = 0;
@@ -204,6 +204,7 @@ public class ExpenseManager {
 
         try(Connection con = DatabaseConnection.getConnection()){
 
+            // Get Total Income
             try(PreparedStatement ps = con.prepareStatement(incomeSql)){
                 ps.setInt(1, userId);
 
@@ -214,7 +215,7 @@ public class ExpenseManager {
                 }
             }
 
-            // Total model.Expense
+            // Get Total Expense
             try(PreparedStatement ps = con.prepareStatement(expenseSql)){
                 ps.setInt(1, userId);
 
@@ -227,15 +228,19 @@ public class ExpenseManager {
 
             double savings = totalIncome - totalExpense;
 
-            System.out.println("\n------ Savings Report ------");
-            System.out.println("model.User ID      : " + userId);
-            System.out.println("Total model.Income : ₹" + totalIncome);
-            System.out.println("Total model.Expense: ₹" + totalExpense);
-            System.out.println("Savings      : ₹" + savings);
+            Savings save = new Savings(
+                    totalIncome,
+                    totalExpense,
+                    savings
+            );
+
+            return save;
 
         }catch(Exception e){
             e.printStackTrace();
         }
+
+        return null;
     }
     public void delUser(int uid){
 

@@ -3,6 +3,8 @@ package Server;
 import com.sun.net.httpserver.HttpServer;
 import manager.ExpenseManager;
 import handler.*;
+import manager.savingHandler;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -27,6 +29,7 @@ public class Server {
 
         server.createContext("/users", new userHandler(manager));
         server.createContext("/income",new incomeHandler(manager));
+        server.createContext("/savings", new savingHandler(manager));
         server.setExecutor(null);
 
         server.start();
