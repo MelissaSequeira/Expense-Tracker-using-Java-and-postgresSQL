@@ -166,7 +166,7 @@ public class ExpenseManager {
             e.printStackTrace();
         }
     }
-    public void viewExpenses(){
+    public ArrayList<Expense> viewExpenses(){
 
         String sql = "SELECT * FROM expense";
 
@@ -176,20 +176,23 @@ public class ExpenseManager {
         ){
 
             while(rs.next()){
-
-                System.out.println("model.Expense ID : " + rs.getInt("expense_id"));
-                System.out.println("model.User ID    : " + rs.getInt("user_id"));
-                System.out.println("Amount     : " + rs.getDouble("amount_spent"));
-                System.out.println("Category   : " + rs.getString("category"));
-                System.out.println("Description: " + rs.getString("description"));
-                System.out.println("Date       : " + rs.getDate("income_date"));
-                System.out.println("Time       : " + rs.getTime("income_time"));
-                System.out.println("---------------------------");
+            Expense exp=new Expense(
+                    rs.getInt("expense_id"),
+                rs.getInt("user_id"),
+                rs.getDouble("amount_spent"),
+                rs.getString("category"),
+                rs.getString("description"),
+                rs.getDate("income_date").toLocalDate(),
+                rs.getTime("income_time").toLocalTime()
+            );
+                expense.add(exp);
             }
+
 
         }catch(Exception e){
             e.printStackTrace();
         }
+        return expense;
     }
     public void calSavings(int userId){
 
@@ -269,11 +272,11 @@ public class ExpenseManager {
             e.printStackTrace();
         }
     }
-    public void delExpense(int uid){
-        String sql="DELETE FROM expense WHERE user_id=?";
+    public void delExpense(int eid){
+        String sql="DELETE FROM expense WHERE expense_id=?";
         try(Connection con= DatabaseConnection.getConnection();
             PreparedStatement ps=con.prepareStatement(sql)){
-            ps.setInt(1,uid);
+            ps.setInt(1,eid);
             int rows=ps.executeUpdate();
             if(rows > 0){
                 System.out.println("model.Expense deleted successfully!");
@@ -326,15 +329,15 @@ public class ExpenseManager {
 //        System.out.println("Today's Savings: ₹" + savings);
 //    }
 
-    public void updExpense(int uid, double amount,String category,String description){
+    public void updExpense(int eid, double amount,String category,String description){
 
-        String sql="UPDATE expense SET amount_spent=?,category=?, description=? WHERE user_id=?";
+        String sql="UPDATE expense SET amount_spent=?,category=?, description=? WHERE expense_id=?";
         try(Connection con= DatabaseConnection.getConnection();
             PreparedStatement ps=con.prepareStatement(sql)){
             ps.setDouble(1,amount);
             ps.setString(2,category);
             ps.setString(3,description);
-            ps.setInt(4,uid);
+            ps.setInt(4,eid);
             int rows = ps.executeUpdate();
 
             if(rows > 0){

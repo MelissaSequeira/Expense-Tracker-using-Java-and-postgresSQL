@@ -11,7 +11,7 @@ public class Expense {
     private String description;
     private LocalDate date;
     private LocalTime time;
-    Expense(int expenseId,int userId, double spentAmt, String category,String description,LocalDate date, LocalTime time){
+    public Expense(int expenseId,int userId, double spentAmt, String category,String description,LocalDate date, LocalTime time){
         this.expenseId=expenseId;
         this.userId=userId;
         this.spentAmt=spentAmt;
